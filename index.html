@@ -172,17 +172,54 @@
                 const pages = document.querySelectorAll('.print-page');
                 for (let i = 0; i < pages.length; i++) {
                   const canvas = await window.html2canvas(pages[i], { 
-                    scale: 5, 
+                    scale: 5, // Маш өндөр чанартай гаралт
                     useCORS: true,
                     scrollY: 0,
                     scrollX: 0,
                     backgroundColor: '#ffffff'
                   });
                   const link = document.createElement('a');
-                  link.download = i === 0 ? 'Guulin_Cover_HD.png' : `Guulin_Month_${i}_HD.png`;
-                  link.href = canvas.toDataURL('image/png'); 
+                  link.download = i === 0 ? 'Guulin_Cover_HD.jpg' : `Guulin_Month_${i}_HD.jpg`;
+                  link.href = canvas.toDataURL('image/jpeg', 1.0); // Өндөр чанартай JPG формат
                   link.click();
                   await new Promise(r => setTimeout(r, 800)); 
+                }
+                
+                window.scrollTo(0, originalScrollY);
+                setIsDownloading(false);
+              };
+            } catch (e) {
+              setIsDownloading(false);
+            }
+          };
+
+          const handleScreenCapture = async () => {
+            setIsDownloading(true);
+            try {
+              const script = document.createElement('script');
+              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+              document.head.appendChild(script);
+              
+              script.onload = async () => {
+                const originalScrollY = window.scrollY;
+                window.scrollTo(0, 0);
+
+                const pages = document.querySelectorAll('.print-page');
+                for (let i = 0; i < pages.length; i++) {
+                  const canvas = await window.html2canvas(pages[i], { 
+                    scale: 3, // Өндөр чанартай screenshot
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0,
+                    backgroundColor: '#ffffff'
+                  });
+                  
+                  const link = document.createElement('a');
+                  link.download = i === 0 ? 'Guulin_Cover_Screenshot.jpg' : `Guulin_Month_${i}_Screenshot.jpg`;
+                  link.href = canvas.toDataURL('image/jpeg', 0.95);
+                  link.click();
+                  
+                  await new Promise(r => setTimeout(r, 600)); 
                 }
                 
                 window.scrollTo(0, originalScrollY);
@@ -206,7 +243,10 @@
                     {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} JPG татах
                   </button>
                   <button onClick={handleDownloadHD} disabled={isDownloading} className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold disabled:opacity-50 hover:bg-emerald-700 transition-colors">
-                    {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} HD татах
+                    {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} HD JPG татах
+                  </button>
+                  <button onClick={handleScreenCapture} disabled={isDownloading} className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold disabled:opacity-50 hover:bg-purple-700 transition-colors">
+                    {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />} Дэлгэцээр татах
                   </button>
                   <button onClick={handlePrint} className="bg-[#d4af37] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold hover:bg-[#b5952f] transition-colors">
                     <Printer size={16} /> Хэвлэх
@@ -214,7 +254,7 @@
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-12 mt-8">
+              <div id="capture-area" className="flex flex-col items-center gap-12 mt-8">
                 
                 {/* Cover Page */}
                 <PageContainer>
@@ -506,6 +546,7 @@
             return () => {
               window.removeEventListener('mousemove', handleMove);
               window.removeEventListener('mouseup', handleEnd);
+              window.removeEventListener('touchmove', handleMove);
               window.removeEventListener('touchmove', handleMove);
               window.removeEventListener('touchend', handleEnd);
             };
