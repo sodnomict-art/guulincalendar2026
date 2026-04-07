@@ -59,14 +59,17 @@
             if (file) {
               const url = URL.createObjectURL(file);
               setImages(prev => ({ ...prev, [index]: url }));
-              setPositions(prev => ({ ...prev, [index]: 50 }));
+              setPositions(prev => ({ ...prev, [index]: { x: 50, y: 50 } }));
             }
           };
 
-          const handlePositionChange = useCallback((index, newPos) => {
+          const handlePositionChange = useCallback((index, newX, newY) => {
             setPositions(prev => ({ 
               ...prev, 
-              [index]: Math.max(0, Math.min(100, newPos)) 
+              [index]: {
+                x: Math.max(0, Math.min(100, newX)),
+                y: Math.max(0, Math.min(100, newY))
+              }
             }));
           }, []);
 
@@ -128,15 +131,28 @@
               document.head.appendChild(script);
               
               script.onload = async () => {
+                // Scroll-ийн асуудлаас болж байрлал зөрдөг тул түр хамгийн дээр аваачна
+                const originalScrollY = window.scrollY;
+                window.scrollTo(0, 0);
+
                 const pages = document.querySelectorAll('.print-page');
                 for (let i = 0; i < pages.length; i++) {
-                  const canvas = await window.html2canvas(pages[i], { scale: 3, useCORS: true });
+                  const canvas = await window.html2canvas(pages[i], { 
+                    scale: 3, 
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0,
+                    backgroundColor: '#ffffff'
+                  });
                   const link = document.createElement('a');
                   link.download = i === 0 ? 'Guulin_Cover.jpg' : `Guulin_Month_${i}.jpg`;
                   link.href = canvas.toDataURL('image/jpeg', 0.95);
                   link.click();
                   await new Promise(r => setTimeout(r, 500));
                 }
+                
+                // Буцаад өмнө байсан газар нь аваачна
+                window.scrollTo(0, originalScrollY);
                 setIsDownloading(false);
               };
             } catch (e) {
@@ -189,7 +205,7 @@
                     <ImageUploader 
                       index={0} 
                       image={images[0]} 
-                      position={positions[0] || 50}
+                      position={positions[0] || { x: 50, y: 50 }}
                       onUpload={handleImageUpload} 
                       onPositionChange={handlePositionChange}
                       placeholderText="Нүүр зураг (Квадрат)" 
@@ -249,7 +265,7 @@
                         <ImageUploader 
                           index={imgIdx} 
                           image={images[imgIdx]} 
-                          position={positions[imgIdx] || 50}
+                          position={positions[imgIdx] || { x: 50, y: 50 }}
                           onUpload={handleImageUpload} 
                           onPositionChange={handlePositionChange}
                           placeholderText={`${imgIdx}-р сарын зураг`} 
@@ -396,14 +412,22 @@
           const fileInputRef = useRef(null);
           const containerRef = useRef(null);
           const isDragging = useRef(false);
+
+          const posX = typeof position === 'number' ? 50 : (position?.x ?? 50);
+          const posY = typeof position === 'number' ? position : (position?.y ?? 50);
+
+          const startX = useRef(0);
           const startY = useRef(0);
-          const startPos = useRef(position);
+          const startPosX = useRef(posX);
+          const startPosY = useRef(posY);
 
           const handleStart = (e) => {
             if (!image) return;
             isDragging.current = true;
-            startY.current = e.clientY || (e.touches && e.touches[0].clientY);
-            startPos.current = position;
+            startX.current = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+            startY.current = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+            startPosX.current = posX;
+            startPosY.current = posY;
             document.body.classList.add('cursor-grabbing');
           };
 
@@ -411,12 +435,24 @@
             const handleMove = (e) => {
               if (!isDragging.current || !containerRef.current) return;
               
-              const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+              const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+              const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+
+              if (clientX === undefined || clientY === undefined) return;
+              
+              const deltaX = clientX - startX.current;
               const deltaY = clientY - startY.current;
+              
+              const containerWidth = containerRef.current.offsetWidth || 300;
               const containerHeight = containerRef.current.offsetHeight || 350;
-              const movePercent = (deltaY / containerHeight) * 100;
-              const newPos = startPos.current - movePercent;
-              onPositionChange(index, newPos);
+              
+              const movePercentX = (deltaX / containerWidth) * 100;
+              const movePercentY = (deltaY / containerHeight) * 100;
+              
+              const newPosX = startPosX.current - movePercentX;
+              const newPosY = startPosY.current - movePercentY;
+              
+              onPositionChange(index, newPosX, newPosY);
             };
 
             const handleEnd = () => {
@@ -449,11 +485,11 @@
               {image ? (
                 <>
                   <div 
-                    className="w-full h-full pointer-events-none transition-[background-position] duration-75 ease-out brightness-[1.08] saturate-[1.05]" 
+                    className="w-full h-full pointer-events-none brightness-[1.08] saturate-[1.05]" 
                     style={{ 
                       backgroundImage: `url(${image})`, 
                       backgroundSize: 'cover', 
-                      backgroundPosition: `50% ${position}%` 
+                      backgroundPosition: `${posX}% ${posY}%` 
                     }} 
                   />
                   <div className="no-print absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
