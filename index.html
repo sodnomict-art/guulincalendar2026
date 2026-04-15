@@ -1,501 +1,496 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, Printer, Image as ImageIcon, Scissors, Sun, Sparkles, Download, Loader2, Move } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Гуулин Календарь 2026</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-export default function App() {
-  const [images, setImages] = useState({});
-  const [positions, setPositions] = useState({});
-  const [isDownloading, setIsDownloading] = useState(false);
+  <!-- HTML2Canvas for Image Download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  const handleImageUpload = (index, event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImages(prev => ({ ...prev, [index]: url }));
-      setPositions(prev => ({ ...prev, [index]: 50 }));
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400&family=Roboto:wght@100;300;400;500;700;900&display=swap');
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6; /* bg-gray-100 */
     }
-  };
-
-  const handlePositionChange = useCallback((index, newPos) => {
-    setPositions(prev => ({ 
-      ...prev, 
-      [index]: Math.max(0, Math.min(100, newPos)) 
-    }));
-  }, []);
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const monthNames = [
-    "I САР", "II САР", "III САР", 
-    "IV САР", "V САР", "VI САР", 
-    "VII САР", "VIII САР", "IX САР", 
-    "X САР", "XI САР", "XII САР"
-  ];
-
-  const monthDescriptions = [
-    { 
-      title: "1. Гуулингийн тал", 
-      desc: "Гуулин тосгоноос зүүн тийш 25 км орчимд орших уудам тал. Энд байгалийн ховор ургамал болох уртууз, харгана, шаваг, хялгана зэрэг ургамал ургадаг өвөрмөц тогтоцтой газар юм." 
-    },
-    { 
-      title: "2. Буган чулуун хөшөө", 
-      desc: "Бага ямаатын хадтай уулын зүүн энгэрт орших улаан хүрэн боржин чулуун хөшөө. Өндөр 116 см бөгөөд 3.2х2.5 м дөрвөлжин хашлага, тахилын байгууламж бүхий хүрэл зэвсгийн үеийн дурсгал." 
-    },
-    { 
-      title: "3. Авдрантын булаг", 
-      desc: "Тосгоноос зүүн хойд зүгт 4.5 км зайд орших анагаах увьдастай рашаан. Жилийн дөрвөн улиралд тасралтгүй оргилдог бөгөөд нутгийн иргэд ходоодны өвчинд голлон хэрэглэдэг." 
-    },
-    { 
-      title: "4. УЦС-ын хүрхрээ", 
-      desc: "Тосгоноос хойд зүгт 4 км зайд оршдог. 1997 онд Усан цахилгаан станц байгуулагдсанаар хаягдал ус нь байгалийн үзэсгэлэнт хүрхрээ үүсгэн Завхан гол руу цутгах болжээ." 
-    },
-    { 
-      title: "5. Цонж хайрхан", 
-      desc: "Тосгоноос баруун хойд зүгт 17 км зайд орших сүрлэг хайрхан. Уулын орой дээр 4.5 метр өргөн, 190 см өндөр хэмжээтэй эртний өвөрмөц чулуун байгууламж сүндэрлэдэг." 
-    },
-    { 
-      title: "6. Их ямаатын агуй", 
-      desc: "Зүүн хойд зүгт 21 км-т орших түүхт агуй. Дөрвөн ханатай гэрийн дайтай хэмжээтэй бөгөөд эрт дээр үед Өөлд хүн амьдарч байсан түүхтэй сонирхолтой дурсгал юм." 
-    },
-    { 
-      title: "7. Цагаан овоо", 
-      desc: "Тосгоноос зүүн тийш 13 км зайд оршино. 115 насалсан Амбуу өвгөний үр хүүхдүүд нь эцгийнхээ 100 насны ойд зориулан босгосон ахмад настнаа дээдлэх Монгол ёсны бэлгэдэл." 
-    },
-    { 
-      title: "8. Бага ямаатын хадны зураг", 
-      desc: "Уулын зүүн урд талын толгойн хадтай оройд хүрэл зэвсгийн үеийн анчдын сэтгэмж, ахуйг харуулсан 11 янгир дүрсэлсэн зураг бий. Энэ орчимд хадны зурагтай 4 өөр газар байдаг." 
-    },
-    { 
-      title: "9. Бага ямаатын хиргисүүр", 
-      desc: "Хүрлийн үеийн 7.1х11 м дөрвөлжин хүрээтэй хиргисүүр. Голын чулуун дараас нь 8.8 м голчтой бөгөөд урд талдаа 4 ширхэг тахилын байгууламжтай ховор олдвор юм." 
-    },
-    { 
-      title: "10. Бага ямаатын булш", 
-      desc: "Дөрвөн буландаа 115 см өндөр босоо чулуутай дөрвөлжин булш. Энэ орчимд хүрлийн үеийн түүхийг өгүүлэх 17 гаруй булш харагддаг нь эртний соёл иргэншлийн ул мөр юм." 
-    },
-    { 
-      title: "11. Их ямаатын хиргисүүр", 
-      desc: "Уулын урагш харсан бэлд орших 13 булш хиргисүүр. Хамгийн том нь 19.2 метр диаметртэй дугуй хүрээтэй бөгөөд дөрвөн талдаа 176 см өндөр сүрлэг босоо хөшөө чулуутай." 
-    },
-    { 
-      title: "12. Завьжийн хөшөө чулуу", 
-      desc: "Хүрлийн үед холбогдох 193 см өндөр сүрлэг хөшөө. 2.8х2.4 м харьцаатай тахилын байгууламж дотор байрлах энэхүү дурсгал нь эртний хүмүүсийн шүтлэгийн нэгэн илэрхийлэл юм." 
+    
+    .font-serif { font-family: 'Playfair Display', serif; }
+    .font-sans { font-family: 'Roboto', sans-serif; }
+    
+    @media print {
+      @page { size: 11cm 16cm; margin: 0; }
+      body { background-color: white; margin: 0; padding: 0; }
+      .no-print { display: none !important; }
+      .print-page { width: 11cm !important; height: 16cm !important; page-break-after: always; margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
     }
-  ];
+    
+    .cursor-grab { cursor: grab; }
+    .cursor-grabbing { cursor: grabbing; }
+    .select-none { user-select: none; -webkit-user-select: none; }
+    .touch-none { touch-action: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-  const weekDays = ['Да', 'Мя', 'Лх', 'Пү', 'Ба', 'Бя', 'Ня'];
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
 
-  const getCalendarDays = (year, monthIndex) => {
-    let firstDay = new Date(year, monthIndex, 1).getDay() - 1;
-    if (firstDay === -1) firstDay = 6;
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-    const blanks = Array.from({ length: firstDay }, (_, i) => null);
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    return [...blanks, ...days];
-  };
+    // --- Inline SVG Icons (Replacing Lucide-React to work standalone without bundler) ---
+    const Upload = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>);
+    const Printer = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>);
+    const ImageIcon = ({ size = 24, className = "", strokeWidth = 2 }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>);
+    const Scissors = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>);
+    const Sun = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>);
+    const Sparkles = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>);
+    const Download = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>);
+    const Loader2 = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>);
+    const Move = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="19 9 22 12 19 15"/><polyline points="9 19 12 22 15 19"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>);
 
-  const holidays2026 = {
-    '0-1': 'Шинэ жил', '1-17': 'Цагаан сар', '1-18': 'Цагаан сар', '1-19': 'Цагаан сар',
-    '2-8': 'Эмэгтэйчүүдийн өдөр', '5-1': 'Хүүхдийн баяр', '6-11': 'Наадам', '6-12': 'Наадам',
-    '6-13': 'Наадам', '6-14': 'Наадам', '6-15': 'Наадам', '10-26': 'Улс тунхагласны баяр',
-    '11-29': 'Эрх чөлөөний өдөр'
-  };
+    // --- Main App Component ---
+    function App() {
+      const [images, setImages] = useState({});
+      const [positions, setPositions] = useState({});
+      const [isDownloading, setIsDownloading] = useState(false);
 
-  const getAstro = (month, day) => {
-    if (!day) return {};
-    const seed = month * 31 + day;
-    // Simple logic for illustration
-    return { dashnyam: seed % 14 === 3, baljinnyam: seed % 17 === 5, haircut: seed % 9 === 2 };
-  };
-
-  const handleDownloadAll = async () => {
-    setIsDownloading(true);
-    try {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      document.head.appendChild(script);
-      
-      script.onload = async () => {
-        const pages = document.querySelectorAll('.print-page');
-        for (let i = 0; i < pages.length; i++) {
-          const canvas = await window.html2canvas(pages[i], { scale: 3, useCORS: true });
-          const link = document.createElement('a');
-          link.download = i === 0 ? 'Guulin_Cover.jpg' : `Guulin_Month_${i}.jpg`;
-          link.href = canvas.toDataURL('image/jpeg', 0.95);
-          link.click();
-          await new Promise(r => setTimeout(r, 500));
+      const handleImageUpload = (index, event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          setImages(prev => ({ ...prev, [index]: url }));
+          setPositions(prev => ({ ...prev, [index]: 50 }));
         }
-        setIsDownloading(false);
       };
-    } catch (e) {
-      setIsDownloading(false);
-    }
-  };
 
-  return (
-    <div className="min-h-screen bg-gray-100 font-sans pb-20">
-      <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400&family=Roboto:wght@100;300;400;500;700;900&display=swap');
-        .font-serif { font-family: 'Playfair Display', serif; }
-        .font-sans { font-family: 'Roboto', sans-serif; }
-        @media print {
-          @page { size: 11cm 16cm; margin: 0; }
-          body { background-color: white; margin: 0; padding: 0; }
-          .no-print { display: none !important; }
-          .print-page { width: 11cm !important; height: 16cm !important; page-break-after: always; margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+      const handlePositionChange = useCallback((index, newPos) => {
+        setPositions(prev => ({ 
+          ...prev, 
+          [index]: Math.max(0, Math.min(100, newPos)) 
+        }));
+      }, []);
+
+      const handlePrint = () => {
+        window.print();
+      };
+
+      const monthNames = [
+        "I САР", "II САР", "III САР", 
+        "IV САР", "V САР", "VI САР", 
+        "VII САР", "VIII САР", "IX САР", 
+        "X САР", "XI САР", "XII САР"
+      ];
+
+      const monthDescriptions = [
+        { title: "1. Гуулингийн тал", desc: "Гуулин тосгоноос зүүн тийш 25 км орчимд орших уудам тал. Энд байгалийн ховор ургамал болох уртууз, харгана, шаваг, хялгана зэрэг ургамал ургадаг өвөрмөц тогтоцтой газар юм." },
+        { title: "2. Буган чулуун хөшөө", desc: "Бага ямаатын хадтай уулын зүүн энгэрт орших улаан хүрэн боржин чулуун хөшөө. Өндөр 116 см бөгөөд 3.2х2.5 м дөрвөлжин хашлага, тахилын байгууламж бүхий хүрэл зэвсгийн үеийн дурсгал." },
+        { title: "3. Авдрантын булаг", desc: "Тосгоноос зүүн хойд зүгт 4.5 км зайд орших анагаах увьдастай рашаан. Жилийн дөрвөн улиралд тасралтгүй оргилдог бөгөөд нутгийн иргэд ходоодны өвчинд голлон хэрэглэдэг." },
+        { title: "4. УЦС-ын хүрхрээ", desc: "Тосгоноос хойд зүгт 4 км зайд оршдог. 1997 онд Усан цахилгаан станц байгуулагдсанаар хаягдал ус нь байгалийн үзэсгэлэнт хүрхрээ үүсгэн Завхан гол руу цутгах болжээ." },
+        { title: "5. Цонж хайрхан", desc: "Тосгоноос баруун хойд зүгт 17 км зайд орших сүрлэг хайрхан. Уулын орой дээр 4.5 метр өргөн, 190 см өндөр хэмжээтэй эртний өвөрмөц чулуун байгууламж сүндэрлэдэг." },
+        { title: "6. Их ямаатын агуй", desc: "Зүүн хойд зүгт 21 км-т орших түүхт агуй. Дөрвөн ханатай гэрийн дайтай хэмжээтэй бөгөөд эрт дээр үед Өөлд хүн амьдарч байсан түүхтэй сонирхолтой дурсгал юм." },
+        { title: "7. Цагаан овоо", desc: "Тосгоноос зүүн тийш 13 км зайд оршино. 115 насалсан Амбуу өвгөний үр хүүхдүүд нь эцгийнхээ 100 насны ойд зориулан босгосон ахмад настнаа дээдлэх Монгол ёсны бэлгэдэл." },
+        { title: "8. Бага ямаатын хадны зураг", desc: "Уулын зүүн урд талын толгойн хадтай оройд хүрэл зэвсгийн үеийн анчдын сэтгэмж, ахуйг харуулсан 11 янгир дүрсэлсэн зураг бий. Энэ орчимд хадны зурагтай 4 өөр газар байдаг." },
+        { title: "9. Бага ямаатын хиргисүүр", desc: "Хүрлийн үеийн 7.1х11 м дөрвөлжин хүрээтэй хиргисүүр. Голын чулуун дараас нь 8.8 м голчтой бөгөөд урд талдаа 4 ширхэг тахилын байгууламжтай ховор олдвор юм." },
+        { title: "10. Бага ямаатын булш", desc: "Дөрвөн буландаа 115 см өндөр босоо чулуутай дөрвөлжин булш. Энэ орчимд хүрлийн үеийн түүхийг өгүүлэх 17 гаруй булш харагддаг нь эртний соёл иргэншлийн ул мөр юм." },
+        { title: "11. Их ямаатын хиргисүүр", desc: "Уулын урагш харсан бэлд орших 13 булш хиргисүүр. Хамгийн том нь 19.2 метр диаметртэй дугуй хүрээтэй бөгөөд дөрвөн талдаа 176 см өндөр сүрлэг босоо хөшөө чулуутай." },
+        { title: "12. Завьжийн хөшөө чулуу", desc: "Хүрлийн үед холбогдох 193 см өндөр сүрлэг хөшөө. 2.8х2.4 м харьцаатай тахилын байгууламж дотор байрлах энэхүү дурсгал нь эртний хүмүүсийн шүтлэгийн нэгэн илэрхийлэл юм." }
+      ];
+
+      const weekDays = ['Да', 'Мя', 'Лх', 'Пү', 'Ба', 'Бя', 'Ня'];
+
+      const getCalendarDays = (year, monthIndex) => {
+        let firstDay = new Date(year, monthIndex, 1).getDay() - 1;
+        if (firstDay === -1) firstDay = 6;
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        const blanks = Array.from({ length: firstDay }, (_, i) => null);
+        const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+        return [...blanks, ...days];
+      };
+
+      const holidays2026 = {
+        '0-1': 'Шинэ жил', '1-17': 'Цагаан сар', '1-18': 'Цагаан сар', '1-19': 'Цагаан сар',
+        '2-8': 'Эмэгтэйчүүдийн өдөр', '5-1': 'Хүүхдийн баяр', '6-11': 'Наадам', '6-12': 'Наадам',
+        '6-13': 'Наадам', '6-14': 'Наадам', '6-15': 'Наадам', '10-26': 'Улс тунхагласны баяр',
+        '11-29': 'Эрх чөлөөний өдөр'
+      };
+
+      const getAstro = (month, day) => {
+        if (!day) return {};
+        const seed = month * 31 + day;
+        return { dashnyam: seed % 14 === 3, baljinnyam: seed % 17 === 5, haircut: seed % 9 === 2 };
+      };
+
+      const handleDownloadAll = async () => {
+        setIsDownloading(true);
+        try {
+          const pages = document.querySelectorAll('.print-page');
+          for (let i = 0; i < pages.length; i++) {
+            const canvas = await window.html2canvas(pages[i], { scale: 3, useCORS: true });
+            const link = document.createElement('a');
+            link.download = i === 0 ? 'Guulin_Cover.jpg' : `Guulin_Month_${i}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+            await new Promise(r => setTimeout(r, 500));
+          }
+          setIsDownloading(false);
+        } catch (e) {
+          setIsDownloading(false);
         }
-        .cursor-grab { cursor: grab; }
-        .cursor-grabbing { cursor: grabbing; }
-        .select-none { user-select: none; -webkit-user-select: none; }
-        .touch-none { touch-action: none; }
-      `}} />
+      };
 
-      {/* Control Bar */}
-      <div className="no-print sticky top-0 z-50 bg-white/95 backdrop-blur shadow-sm px-6 py-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-black text-[#1e3a8a] tracking-tight text-center">ГУУЛИН ТОСГОН 2026</h1>
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5 text-center">Гэрэл зургийн календарь</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={handleDownloadAll} disabled={isDownloading} className="bg-[#1e3a8a] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold disabled:opacity-50 hover:bg-[#152b69] transition-colors">
-            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} JPG татах
-          </button>
-          <button onClick={handlePrint} className="bg-[#d4af37] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold hover:bg-[#b5952f] transition-colors">
-            <Printer size={16} /> Хэвлэх
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center gap-12 mt-8">
-        
-        {/* Cover Page */}
-        <PageContainer>
-          <div className="absolute inset-0 bg-gradient-to-br from-[#ffffff] via-[#fdfbf7] to-[#f4f0e6] z-0"></div>
-
-          <div className="absolute top-[24px] left-[22px] z-20 border-l border-[#d4af37] pl-2.5">
-            <p className="text-[#1e3a8a] font-serif text-[6px] font-bold uppercase tracking-[0.1em] leading-relaxed">
-              Гуулин тосгоны<br/>Соёлын төв
-            </p>
-          </div>
-          <div className="absolute top-[24px] right-[22px] z-20 border-r border-[#d4af37] pr-2.5 text-right">
-            <p className="text-[#1e3a8a] font-serif text-[6px] font-bold uppercase tracking-[0.1em] leading-relaxed">
-              XVII жарны<br/>Гал морин жил
-            </p>
-          </div>
-
-          {/* Logo container */}
-          <div className="absolute z-30 flex items-center justify-center p-[2.5px] w-[80px] h-[80px] rounded-full bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.15)] border-2 border-[#d4af37]" style={{ top: 'calc(1.5cm - 40px)', left: '50%', transform: 'translateX(-50%)' }}>
-            <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#fdfbf7]">
-              <LogoUploader image={images['logo']} onUpload={(e) => handleImageUpload('logo', e)} />
+      return (
+        <div className="min-h-screen bg-gray-100 font-sans pb-20">
+          <div className="no-print sticky top-0 z-50 bg-white/95 backdrop-blur shadow-sm px-6 py-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-black text-[#1e3a8a] tracking-tight text-center">ГУУЛИН ТОСГОН 2026</h1>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5 text-center">Гэрэл зургийн календарь</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={handleDownloadAll} disabled={isDownloading} className="bg-[#1e3a8a] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold disabled:opacity-50 hover:bg-[#152b69] transition-colors">
+                {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} JPG татах
+              </button>
+              <button onClick={handlePrint} className="bg-[#d4af37] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold hover:bg-[#b5952f] transition-colors">
+                <Printer size={16} /> Хэвлэх
+              </button>
             </div>
           </div>
 
-          <div className="absolute z-10 overflow-hidden shadow-2xl border border-[#d4af37]/40 rounded-[2px]" style={{ top: '1.5cm', left: '1cm', right: '1cm', height: '9cm' }}>
-            <ImageUploader 
-              index={0} 
-              image={images[0]} 
-              position={positions[0] || 50}
-              onUpload={handleImageUpload} 
-              onPositionChange={handlePositionChange}
-              placeholderText="Нүүр зураг (Квадрат)" 
-            />
-          </div>
+          <div className="flex flex-col items-center gap-12 mt-8">
+            {/* Cover Page */}
+            <PageContainer>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#ffffff] via-[#fdfbf7] to-[#f4f0e6] z-0"></div>
 
-          <div className="absolute z-20 flex flex-col items-center justify-center w-full" style={{ top: '10.5cm', bottom: '0' }}>
-            <GoldenFeather className="absolute top-[20px] left-[-15px] w-[100px] h-[100px] opacity-[0.2] pointer-events-none" style={{ transform: 'rotate(50deg)' }} />
-            <GoldenFeather className="absolute bottom-[10px] right-[-20px] w-[120px] h-[120px] opacity-[0.15] pointer-events-none" style={{ transform: 'scaleX(-1) rotate(30deg)' }} />
-            
-            <div className="flex flex-col items-center justify-between w-full relative z-10 px-8 h-full pt-3 pb-6">
-              <div className="flex flex-col items-center w-full">
-                <h1 className="font-serif uppercase flex flex-col items-center text-center leading-none">
-                  <span className="text-[#1e3a8a] font-black text-[34px] tracking-[0.25em] ml-2.5 drop-shadow-md">ГУУЛИН</span>
-                  <span className="text-[#d4af37] font-semibold text-[18px] tracking-[0.4em] mt-1.5 ml-2">ТОСГОНЫ</span>
-                </h1>
-                
-                <div className="flex items-center gap-3 w-full justify-center mt-3 mb-2 opacity-90">
-                  <div className="h-[0.8px] w-10 bg-[#d4af37]"></div>
-                  <GoldenFeather className="w-5 h-5" style={{ transform: 'scaleX(-1) rotate(25deg)' }} />
-                  <div className="w-1.5 h-1.5 rotate-45 bg-[#1e3a8a]"></div>
-                  <GoldenFeather className="w-5 h-5" style={{ transform: 'rotate(25deg)' }} />
-                  <div className="h-[0.8px] w-10 bg-[#d4af37]"></div>
-                </div>
-
-                <p className="text-[#1e3a8a] font-sans text-[11px] uppercase tracking-[0.25em] font-black text-center bg-white/95 px-5 py-2 rounded-full border border-[#d4af37]/50 shadow-sm mt-1">
-                  Байгалийн үзэсгэлэнт газрууд
+              <div className="absolute top-[24px] left-[22px] z-20 border-l border-[#d4af37] pl-2.5">
+                <p className="text-[#1e3a8a] font-serif text-[6px] font-bold uppercase tracking-[0.1em] leading-relaxed">
+                  Гуулин тосгоны<br/>Соёлын төв
+                </p>
+              </div>
+              <div className="absolute top-[24px] right-[22px] z-20 border-r border-[#d4af37] pr-2.5 text-right">
+                <p className="text-[#1e3a8a] font-serif text-[6px] font-bold uppercase tracking-[0.1em] leading-relaxed">
+                  XVII жарны<br/>Гал морин жил
                 </p>
               </div>
 
-              <div className="w-full flex items-center justify-between border-t border-[#d4af37]/40 pt-3 mt-auto">
-                <span className="text-[#1e3a8a]/90 font-sans text-[8px] uppercase tracking-[0.2em] font-black flex-1 text-left">
-                  Өврийн дэвтэр
-                </span>
-                <div className="flex items-center justify-center gap-1.5 mx-1.5">
-                  <div className="w-1 h-1 rotate-45 border border-[#d4af37]"></div>
-                  <span className="text-[#d4af37] font-serif font-black text-[22px] tracking-widest leading-none">2026</span>
-                  <div className="w-1 h-1 rotate-45 border border-[#d4af37]"></div>
+              <div className="absolute z-30 flex items-center justify-center p-[2.5px] w-[80px] h-[80px] rounded-full bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.15)] border-2 border-[#d4af37]" style={{ top: 'calc(1.5cm - 40px)', left: '50%', transform: 'translateX(-50%)' }}>
+                <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#fdfbf7]">
+                  <LogoUploader image={images['logo']} onUpload={(e) => handleImageUpload('logo', e)} />
                 </div>
-                <span className="text-[#1e3a8a]/90 font-sans text-[8px] uppercase tracking-[0.2em] font-black flex-1 text-right">
-                  Календарь
-                </span>
               </div>
-            </div>
-          </div>
-        </PageContainer>
 
-        {/* Monthly Pages */}
-        {Array.from({ length: 12 }).map((_, i) => {
-          const monthIndex = i;
-          const days = getCalendarDays(2026, monthIndex);
-          const imgIdx = i + 1;
-          return (
-            <PageContainer key={`month-${i}`}>
-              <div className="relative w-full overflow-hidden" style={{ height: '52%' }}>
+              <div className="absolute z-10 overflow-hidden shadow-2xl border border-[#d4af37]/40 rounded-[2px]" style={{ top: '1.5cm', left: '1cm', right: '1cm', height: '9cm' }}>
                 <ImageUploader 
-                  index={imgIdx} 
-                  image={images[imgIdx]} 
-                  position={positions[imgIdx] || 50}
+                  index={0} 
+                  image={images[0]} 
+                  position={positions[0] || 50}
                   onUpload={handleImageUpload} 
                   onPositionChange={handlePositionChange}
-                  placeholderText={`${imgIdx}-р сарын зураг`} 
+                  placeholderText="Нүүр зураг (Квадрат)" 
                 />
+              </div>
+
+              <div className="absolute z-20 flex flex-col items-center justify-center w-full" style={{ top: '10.5cm', bottom: '0' }}>
+                <GoldenFeather className="absolute top-[20px] left-[-15px] w-[100px] h-[100px] opacity-[0.2] pointer-events-none" style={{ transform: 'rotate(50deg)' }} />
+                <GoldenFeather className="absolute bottom-[10px] right-[-20px] w-[120px] h-[120px] opacity-[0.15] pointer-events-none" style={{ transform: 'scaleX(-1) rotate(30deg)' }} />
                 
-                <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
-                  <div className="bg-white/95 backdrop-blur-sm px-4 py-2 shadow-lg border-t border-[#d4af37]/30">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <div className="w-1 h-3 bg-[#d4af37]"></div>
-                      <h3 className="text-[#1e3a8a] font-serif text-[9px] font-black uppercase tracking-[0.05em]">{monthDescriptions[monthIndex].title}</h3>
+                <div className="flex flex-col items-center justify-between w-full relative z-10 px-8 h-full pt-3 pb-6">
+                  <div className="flex flex-col items-center w-full">
+                    <h1 className="font-serif uppercase flex flex-col items-center text-center leading-none">
+                      <span className="text-[#1e3a8a] font-black text-[34px] tracking-[0.25em] ml-2.5 drop-shadow-md">ГУУЛИН</span>
+                      <span className="text-[#d4af37] font-semibold text-[18px] tracking-[0.4em] mt-1.5 ml-2">ТОСГОНЫ</span>
+                    </h1>
+                    
+                    <div className="flex items-center gap-3 w-full justify-center mt-3 mb-2 opacity-90">
+                      <div className="h-[0.8px] w-10 bg-[#d4af37]"></div>
+                      <GoldenFeather className="w-5 h-5" style={{ transform: 'scaleX(-1) rotate(25deg)' }} />
+                      <div className="w-1.5 h-1.5 rotate-45 bg-[#1e3a8a]"></div>
+                      <GoldenFeather className="w-5 h-5" style={{ transform: 'rotate(25deg)' }} />
+                      <div className="h-[0.8px] w-10 bg-[#d4af37]"></div>
                     </div>
-                    <p className="text-[#1e293b] font-sans text-[7.5px] font-medium leading-[1.3] tracking-tight pl-3 border-l border-[#d4af37]/20">
-                      {monthDescriptions[monthIndex].desc}
+
+                    <p className="text-[#1e3a8a] font-sans text-[11px] uppercase tracking-[0.25em] font-black text-center bg-white/95 px-5 py-2 rounded-full border border-[#d4af37]/50 shadow-sm mt-1">
+                      Байгалийн үзэсгэлэнт газрууд
                     </p>
                   </div>
-                </div>
 
-                <div className="absolute top-[12px] right-[12px] z-20">
-                  <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded border-r-4 border-[#d4af37] shadow-md">
-                    <h2 className="text-[#1e3a8a] font-serif text-[13px] font-black tracking-tight">{monthNames[monthIndex]}</h2>
-                  </div>
-                </div>
-              </div>
-
-              {/* Decorative separator */}
-              <div className="relative h-5 w-full flex items-center justify-center z-30 bg-white">
-                <div className="absolute inset-0 flex items-center px-4">
-                  <div className="h-[0.5px] flex-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
-                </div>
-                <div className="relative flex items-center gap-2 px-3 bg-white">
-                   <div className="flex gap-1">
+                  <div className="w-full flex items-center justify-between border-t border-[#d4af37]/40 pt-3 mt-auto">
+                    <span className="text-[#1e3a8a]/90 font-sans text-[8px] uppercase tracking-[0.2em] font-black flex-1 text-left">
+                      Өврийн дэвтэр
+                    </span>
+                    <div className="flex items-center justify-center gap-1.5 mx-1.5">
                       <div className="w-1 h-1 rotate-45 border border-[#d4af37]"></div>
-                      <div className="w-1 h-1 rotate-45 bg-[#1e3a8a]"></div>
+                      <span className="text-[#d4af37] font-serif font-black text-[22px] tracking-widest leading-none">2026</span>
                       <div className="w-1 h-1 rotate-45 border border-[#d4af37]"></div>
-                   </div>
-                </div>
-              </div>
-
-              <div className="bg-white flex flex-col justify-between flex-1" style={{ padding: '0px 20px 10px 20px' }}>
-                <div>
-                  <div className="grid grid-cols-7 gap-1 mb-1">
-                    {weekDays.map(day => (
-                      <div key={day} className={`text-center text-[8px] font-black uppercase tracking-widest pb-1 border-b-2 ${day === 'Бя' || day === 'Ня' ? 'text-red-500 border-red-100' : 'text-[#1e3a8a] border-blue-50'}`}>{day}</div>
-                    ))}
+                    </div>
+                    <span className="text-[#1e3a8a]/90 font-sans text-[8px] uppercase tracking-[0.2em] font-black flex-1 text-right">
+                      Календарь
+                    </span>
                   </div>
-                  <div className="grid grid-cols-7 gap-1">
-                    {days.map((day, idx) => {
-                      const isWeekend = idx % 7 === 5 || idx % 7 === 6;
-                      const holiday = day ? holidays2026[`${monthIndex}-${day}`] : null;
-                      const astro = getAstro(monthIndex, day);
-                      return (
-                        <div key={idx} className={`relative flex flex-col items-center justify-center rounded h-[28px] ${holiday ? 'bg-red-50/50' : ''}`}>
-                          {day && (
-                            <>
-                              <span className={`text-[10px] font-bold ${holiday || isWeekend ? 'text-red-600' : 'text-slate-800'}`}>{day}</span>
-                              <div className="flex gap-0.5 mt-0.5">
-                                {holiday && <div className="w-0.8 h-0.8 rounded-full bg-red-600" />}
-                                {astro.dashnyam && <Sun size={6} className="text-[#d4af37]" />}
-                                {astro.baljinnyam && <Sparkles size={6} className="text-[#d4af37]" />}
-                                {astro.haircut && <Scissors size={6} className="text-[#1e3a8a] opacity-50" />}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Legend / Astro Info */}
-                <div className="mt-2 pt-2 border-t-2 border-[#1e3a8a]/10 bg-slate-50/50 rounded-b-md">
-                   <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 pb-1.5 px-2">
-                      <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                        <Sun size={8} className="text-[#d4af37] fill-[#d4af37]/20" />
-                        <span className="text-[7px] font-black text-[#1e3a8a] uppercase tracking-tight">Дашням</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                        <Sparkles size={8} className="text-[#d4af37] fill-[#d4af37]/20" />
-                        <span className="text-[7px] font-black text-[#1e3a8a] uppercase tracking-tight">Бальжинням</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                        <Scissors size={8} className="text-[#1e3a8a]" />
-                        <span className="text-[7px] font-black text-[#1e3a8a] uppercase tracking-tight">Үс засуулах</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-600 shadow-sm" />
-                        <span className="text-[7px] font-black text-red-600 uppercase tracking-tight">Амралт</span>
-                      </div>
-                   </div>
-                   <div className="flex justify-center items-center px-4 py-1 bg-[#1e3a8a]/5 border-t border-[#1e3a8a]/10">
-                      <div className="flex gap-2">
-                        <Sun size={7} className="text-[#d4af37]" />
-                        <Sparkles size={7} className="text-[#d4af37]" />
-                        <Scissors size={7} className="text-[#1e3a8a]" />
-                      </div>
-                   </div>
                 </div>
               </div>
             </PageContainer>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
-function PageContainer({ children }) {
-  return (
-    <div className="print-page relative bg-white shadow-2xl overflow-hidden flex flex-col shrink-0" style={{ width: '11cm', height: '16cm' }}>
-      <div className="absolute inset-0 pointer-events-none z-50 border-[10px] border-[#1e3a8a]" />
-      <div className="absolute inset-[10px] pointer-events-none z-50 border border-[#d4af37]" />
-      <div className="absolute inset-0 z-10 flex flex-col">
-        {children}
-      </div>
-    </div>
-  );
-}
+            {/* Monthly Pages */}
+            {Array.from({ length: 12 }).map((_, i) => {
+              const monthIndex = i;
+              const days = getCalendarDays(2026, monthIndex);
+              const imgIdx = i + 1;
+              return (
+                <PageContainer key={`month-${i}`}>
+                  <div className="relative w-full overflow-hidden" style={{ height: '52%' }}>
+                    <ImageUploader 
+                      index={imgIdx} 
+                      image={images[imgIdx]} 
+                      position={positions[imgIdx] || 50}
+                      onUpload={handleImageUpload} 
+                      onPositionChange={handlePositionChange}
+                      placeholderText={`${imgIdx}-р сарын зураг`} 
+                    />
+                    
+                    <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
+                      <div className="bg-white/95 backdrop-blur-sm px-4 py-2 shadow-lg border-t border-[#d4af37]/30">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <div className="w-1 h-3 bg-[#d4af37]"></div>
+                          <h3 className="text-[#1e3a8a] font-serif text-[9px] font-black uppercase tracking-[0.05em]">{monthDescriptions[monthIndex].title}</h3>
+                        </div>
+                        <p className="text-[#1e293b] font-sans text-[7.5px] font-medium leading-[1.3] tracking-tight pl-3 border-l border-[#d4af37]/20">
+                          {monthDescriptions[monthIndex].desc}
+                        </p>
+                      </div>
+                    </div>
 
-function ImageUploader({ index, image, position, onUpload, onPositionChange, placeholderText }) {
-  const fileInputRef = useRef(null);
-  const containerRef = useRef(null);
-  const isDragging = useRef(false);
-  const startY = useRef(0);
-  const startPos = useRef(position);
+                    <div className="absolute top-[12px] right-[12px] z-20">
+                      <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded border-r-4 border-[#d4af37] shadow-md">
+                        <h2 className="text-[#1e3a8a] font-serif text-[13px] font-black tracking-tight">{monthNames[monthIndex]}</h2>
+                      </div>
+                    </div>
+                  </div>
 
-  const handleStart = (e) => {
-    if (!image) return;
-    isDragging.current = true;
-    startY.current = e.clientY || (e.touches && e.touches[0].clientY);
-    startPos.current = position;
-    document.body.classList.add('cursor-grabbing');
-  };
+                  <div className="relative h-5 w-full flex items-center justify-center z-30 bg-white">
+                    <div className="absolute inset-0 flex items-center px-4">
+                      <div className="h-[0.5px] flex-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
+                    </div>
+                    <div className="relative flex items-center gap-2 px-3 bg-white">
+                       <div className="flex gap-1">
+                          <div className="w-1 h-1 rotate-45 border border-[#d4af37]"></div>
+                          <div className="w-1 h-1 rotate-45 bg-[#1e3a8a]"></div>
+                          <div className="w-1 h-1 rotate-45 border border-[#d4af37]"></div>
+                       </div>
+                    </div>
+                  </div>
 
-  useEffect(() => {
-    const handleMove = (e) => {
-      if (!isDragging.current || !containerRef.current) return;
-      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-      const deltaY = clientY - startY.current;
-      const containerHeight = containerRef.current.offsetHeight || 350;
-      const movePercent = (deltaY / containerHeight) * 100;
-      const newPos = startPos.current - movePercent;
-      onPositionChange(index, newPos);
-    };
+                  <div className="bg-white flex flex-col justify-between flex-1" style={{ padding: '0px 20px 10px 20px' }}>
+                    <div>
+                      <div className="grid grid-cols-7 gap-1 mb-1">
+                        {weekDays.map(day => (
+                          <div key={day} className={`text-center text-[8px] font-black uppercase tracking-widest pb-1 border-b-2 ${day === 'Бя' || day === 'Ня' ? 'text-red-500 border-red-100' : 'text-[#1e3a8a] border-blue-50'}`}>{day}</div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {days.map((day, idx) => {
+                          const isWeekend = idx % 7 === 5 || idx % 7 === 6;
+                          const holiday = day ? holidays2026[`${monthIndex}-${day}`] : null;
+                          const astro = getAstro(monthIndex, day);
+                          return (
+                            <div key={idx} className={`relative flex flex-col items-center justify-center rounded h-[28px] ${holiday ? 'bg-red-50/50' : ''}`}>
+                              {day && (
+                                <>
+                                  <span className={`text-[10px] font-bold ${holiday || isWeekend ? 'text-red-600' : 'text-slate-800'}`}>{day}</span>
+                                  <div className="flex gap-0.5 mt-0.5">
+                                    {holiday && <div className="w-0.8 h-0.8 rounded-full bg-red-600" />}
+                                    {astro.dashnyam && <Sun size={6} className="text-[#d4af37]" />}
+                                    {astro.baljinnyam && <Sparkles size={6} className="text-[#d4af37]" />}
+                                    {astro.haircut && <Scissors size={6} className="text-[#1e3a8a] opacity-50" />}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
-    const handleEnd = () => {
-      if (isDragging.current) {
-        isDragging.current = false;
-        document.body.classList.remove('cursor-grabbing');
-      }
-    };
-
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
-    window.addEventListener('touchmove', handleMove, { passive: false });
-    window.addEventListener('touchend', handleEnd);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleEnd);
-      window.removeEventListener('touchmove', handleMove);
-      window.removeEventListener('touchend', handleEnd);
-    };
-  }, [index, onPositionChange]);
-
-  return (
-    <div 
-      ref={containerRef}
-      className={`relative w-full h-full bg-slate-100 overflow-hidden group select-none touch-none ${image ? 'cursor-grab' : 'cursor-pointer'}`} 
-      onMouseDown={handleStart} 
-      onTouchStart={handleStart}
-    >
-      {image ? (
-        <>
-          <div 
-            className="w-full h-full pointer-events-none transition-[background-position] duration-75 ease-out" 
-            style={{ 
-              backgroundImage: `url(${image})`, 
-              backgroundSize: 'cover', 
-              backgroundPosition: `50% ${position}%` 
-            }} 
-          />
-          <div className="no-print absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-            <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/50 shadow-sm">
-              <Move size={14} className="text-[#1e3a8a]" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-[#1e3a8a]">Чирэх</span>
-            </div>
-            <button 
-              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} 
-              className="absolute top-3 left-3 p-2 bg-white/90 rounded-full shadow-md pointer-events-auto hover:scale-110 transition-transform"
-            >
-              <Upload size={16} className="text-[#1e3a8a]" />
-            </button>
+                    <div className="mt-2 pt-2 border-t-2 border-[#1e3a8a]/10 bg-slate-50/50 rounded-b-md">
+                       <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 pb-1.5 px-2">
+                          <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
+                            <Sun size={8} className="text-[#d4af37]" />
+                            <span className="text-[7px] font-black text-[#1e3a8a] uppercase tracking-tight">Дашням</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
+                            <Sparkles size={8} className="text-[#d4af37]" />
+                            <span className="text-[7px] font-black text-[#1e3a8a] uppercase tracking-tight">Бальжинням</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
+                            <Scissors size={8} className="text-[#1e3a8a]" />
+                            <span className="text-[7px] font-black text-[#1e3a8a] uppercase tracking-tight">Үс засуулах</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-600 shadow-sm" />
+                            <span className="text-[7px] font-black text-red-600 uppercase tracking-tight">Амралт</span>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+                </PageContainer>
+              );
+            })}
           </div>
-        </>
-      ) : (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400" onClick={() => fileInputRef.current?.click()}>
-          <ImageIcon size={40} strokeWidth={1} />
-          <span className="text-[9px] uppercase tracking-widest mt-3 font-black opacity-60 text-center px-4">{placeholderText}</span>
         </div>
-      )}
-      <input type="file" ref={fileInputRef} onChange={(e) => onUpload(index, e)} accept="image/*" className="hidden" />
-    </div>
-  );
-}
+      );
+    }
 
-function LogoUploader({ image, onUpload }) {
-  const fileInputRef = useRef(null);
-  return (
-    <div className="w-full h-full bg-white flex items-center justify-center cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-      {image ? <img src={image} className="w-full h-full object-contain p-1.5 pointer-events-none" alt="Logo" /> : <Sparkles size={28} className="text-[#d4af37]" />}
-      <input type="file" ref={fileInputRef} onChange={onUpload} accept="image/*" className="hidden" />
-    </div>
-  );
-}
+    function PageContainer({ children }) {
+      return (
+        <div className="print-page relative bg-white shadow-2xl overflow-hidden flex flex-col shrink-0" style={{ width: '11cm', height: '16cm' }}>
+          <div className="absolute inset-0 pointer-events-none z-50 border-[10px] border-[#1e3a8a]"></div>
+          <div className="absolute inset-[10px] pointer-events-none z-50 border border-[#d4af37]"></div>
+          <div className="absolute inset-0 z-10 flex flex-col">
+            {children}
+          </div>
+        </div>
+      );
+    }
 
-function GoldenFeather({ className, style }) {
-  return (
-    <svg className={className} style={style} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15,85 C15,85 30,40 70,15 C90,5 95,5 95,5 C95,5 80,25 60,60 C40,90 15,85 15,85 Z" fill="url(#featherGlow)" />
-      <path d="M15,85 C15,85 30,40 70,15 C90,5 95,5 95,5" stroke="url(#featherGold)" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M30,65 C45,50 60,30 75,18" stroke="url(#featherGold)" strokeWidth="0.8" opacity="0.6"/>
-      <path d="M40,75 C55,60 70,40 85,25" stroke="url(#featherGold)" strokeWidth="0.6" opacity="0.4"/>
-      <path d="M22,78 C35,60 55,35 70,22" stroke="url(#featherGold)" strokeWidth="0.8" opacity="0.5"/>
-      <path d="M50,82 C65,65 80,45 92,30" stroke="url(#featherGold)" strokeWidth="0.4" opacity="0.3"/>
-      <path d="M25,50 C40,40 55,25 65,15" stroke="url(#featherGold)" strokeWidth="0.6" opacity="0.5"/>
-      <circle cx="85" cy="20" r="1.5" fill="#d4af37" />
-      <circle cx="75" cy="10" r="1" fill="#d4af37" opacity="0.8"/>
-      <circle cx="95" cy="15" r="0.8" fill="#d4af37" opacity="0.6"/>
-      <circle cx="10" cy="80" r="1" fill="#d4af37" opacity="0.5"/>
-      <defs>
-        <linearGradient id="featherGold" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#b5952f" />
-          <stop offset="50%" stopColor="#fdfbf7" />
-          <stop offset="100%" stopColor="#d4af37" />
-        </linearGradient>
-        <linearGradient id="featherGlow" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#d4af37" stopOpacity="0.05" />
-          <stop offset="50%" stopColor="#d4af37" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#b5952f" stopOpacity="0.0" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+    function ImageUploader({ index, image, position, onUpload, onPositionChange, placeholderText }) {
+      const fileInputRef = useRef(null);
+      const containerRef = useRef(null);
+      const isDragging = useRef(false);
+      const startY = useRef(0);
+      const startPos = useRef(position);
+
+      const handleStart = (e) => {
+        if (!image) return;
+        isDragging.current = true;
+        startY.current = e.clientY || (e.touches && e.touches[0].clientY);
+        startPos.current = position;
+        document.body.classList.add('cursor-grabbing');
+      };
+
+      useEffect(() => {
+        const handleMove = (e) => {
+          if (!isDragging.current || !containerRef.current) return;
+          const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+          const deltaY = clientY - startY.current;
+          const containerHeight = containerRef.current.offsetHeight || 350;
+          const movePercent = (deltaY / containerHeight) * 100;
+          const newPos = startPos.current - movePercent;
+          onPositionChange(index, newPos);
+        };
+
+        const handleEnd = () => {
+          if (isDragging.current) {
+            isDragging.current = false;
+            document.body.classList.remove('cursor-grabbing');
+          }
+        };
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+
+        return () => {
+          window.removeEventListener('mousemove', handleMove);
+          window.removeEventListener('mouseup', handleEnd);
+          window.removeEventListener('touchmove', handleMove);
+          window.removeEventListener('touchend', handleEnd);
+        };
+      }, [index, onPositionChange]);
+
+      return (
+        <div 
+          ref={containerRef}
+          className={`relative w-full h-full bg-slate-100 overflow-hidden group select-none touch-none ${image ? 'cursor-grab' : 'cursor-pointer'}`} 
+          onMouseDown={handleStart} 
+          onTouchStart={handleStart}
+        >
+          {image ? (
+            <React.Fragment>
+              <div 
+                className="w-full h-full pointer-events-none transition-[background-position] duration-75 ease-out" 
+                style={{ 
+                  backgroundImage: `url(${image})`, 
+                  backgroundSize: 'cover', 
+                  backgroundPosition: `50% ${position}%` 
+                }} 
+              />
+              <div className="no-print absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/50 shadow-sm">
+                  <Move size={14} className="text-[#1e3a8a]" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-[#1e3a8a]">Чирэх</span>
+                </div>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} 
+                  className="absolute top-3 left-3 p-2 bg-white/90 rounded-full shadow-md pointer-events-auto hover:scale-110 transition-transform"
+                >
+                  <Upload size={16} className="text-[#1e3a8a]" />
+                </button>
+              </div>
+            </React.Fragment>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400" onClick={() => fileInputRef.current?.click()}>
+              <ImageIcon size={40} strokeWidth={1} />
+              <span className="text-[9px] uppercase tracking-widest mt-3 font-black opacity-60 text-center px-4">{placeholderText}</span>
+            </div>
+          )}
+          <input type="file" ref={fileInputRef} onChange={(e) => onUpload(index, e)} accept="image/*" className="hidden" />
+        </div>
+      );
+    }
+
+    function LogoUploader({ image, onUpload }) {
+      const fileInputRef = useRef(null);
+      return (
+        <div className="w-full h-full bg-white flex items-center justify-center cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+          {image ? <img src={image} className="w-full h-full object-contain p-1.5 pointer-events-none" alt="Logo" /> : <Sparkles size={28} className="text-[#d4af37]" />}
+          <input type="file" ref={fileInputRef} onChange={onUpload} accept="image/*" className="hidden" />
+        </div>
+      );
+    }
+
+    function GoldenFeather({ className, style }) {
+      return (
+        <svg className={className} style={style} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15,85 C15,85 30,40 70,15 C90,5 95,5 95,5 C95,5 80,25 60,60 C40,90 15,85 15,85 Z" fill="url(#featherGlow)" />
+          <path d="M15,85 C15,85 30,40 70,15 C90,5 95,5 95,5" stroke="url(#featherGold)" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M30,65 C45,50 60,30 75,18" stroke="url(#featherGold)" strokeWidth="0.8" opacity="0.6"/>
+          <path d="M40,75 C55,60 70,40 85,25" stroke="url(#featherGold)" strokeWidth="0.6" opacity="0.4"/>
+          <path d="M22,78 C35,60 55,35 70,22" stroke="url(#featherGold)" strokeWidth="0.8" opacity="0.5"/>
+          <path d="M50,82 C65,65 80,45 92,30" stroke="url(#featherGold)" strokeWidth="0.4" opacity="0.3"/>
+          <path d="M25,50 C40,40 55,25 65,15" stroke="url(#featherGold)" strokeWidth="0.6" opacity="0.5"/>
+          <circle cx="85" cy="20" r="1.5" fill="#d4af37" />
+          <circle cx="75" cy="10" r="1" fill="#d4af37" opacity="0.8"/>
+          <circle cx="95" cy="15" r="0.8" fill="#d4af37" opacity="0.6"/>
+          <circle cx="10" cy="80" r="1" fill="#d4af37" opacity="0.5"/>
+          <defs>
+            <linearGradient id="featherGold" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#b5952f" />
+              <stop offset="50%" stopColor="#fdfbf7" />
+              <stop offset="100%" stopColor="#d4af37" />
+            </linearGradient>
+            <linearGradient id="featherGlow" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#d4af37" stopOpacity="0.05" />
+              <stop offset="50%" stopColor="#d4af37" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#b5952f" stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
